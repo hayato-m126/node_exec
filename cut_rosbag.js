@@ -12,22 +12,34 @@ let server = http.createServer(
         const inFile = queryString.inFile;
         const startTime = queryString.startTime;
         const endTime = queryString.endTime;
-        let outFile = inFile;
-        let bashCommand = "echo filter bag";
+        const topics = queryString.topics.split(','); //,区切りで複数個渡す
+        let outFile = "filtered_" + inFile;
+        let bashCommand = "rosbag filter " + inFile + " " + outFile + " '";
+
+        if(topics !== undefined){
+            for(var i=0; i<topics.length; i++){
+                bashCommand += "topic == \"" + topics[i] + "\" ";
+                if(i!=topics.length-1){
+                    bashCommand += "or ";
+                }
+            }
+            if (startTime === undefined && endTime === undefined){
+                bashCommand += "'";
+            }else{
+                bashCommand += "and ";
+            }
+        }
 
         if (startTime !== undefined && endTime !== undefined){
-            outFile = "filtered_from_"+ startTime +"_to_" + endTime + inFile
-            bashCommand = "rosbag filter " + inFile + " " + outFile + " 't.secs >= " + startTime + " and t.secs <= " + endTime + "'";
+            bashCommand += "t.secs >= " + startTime + " and t.secs <= " + endTime + "'";
         }
 
         if (startTime !== undefined && endTime === undefined){
-            outFile = "filtered_from_"+ startTime + "_" + inFile
-            bashCommand = "rosbag filter " + inFile + " " + outFile + " 't.secs >= " + startTime + "'";
+            bashCommand += "t.secs >= " + startTime + "'";
         }
 
         if (startTime === undefined && endTime !== undefined){
-            outFile = "filtered_to_"+ endTime + "_" + inFile
-            bashCommand = "rosbag filter " + inFile + " " + outFile + " 't.secs <= " + endTime + "'";
+            bashCommand += "t.secs <= " + endTime + "'";
         }
 
         execSync(bashCommand);
