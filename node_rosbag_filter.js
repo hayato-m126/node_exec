@@ -18,6 +18,7 @@ let server = http.createServer(
         let bashCommand = "rosbag filter " + inBag + " " + outBag + " '";
 
         if(topics !== undefined){
+            bashCommand += "(";
             for(var i=0; i<topics.length; i++){
                 bashCommand += "topic == \"" + topics[i] + "\" ";
                 if(i!=topics.length-1){
@@ -25,9 +26,9 @@ let server = http.createServer(
                 }
             }
             if (startTime === undefined && endTime === undefined){
-                bashCommand += "'";
+                bashCommand += ")'";
             }else{
-                bashCommand += "and ";
+                bashCommand += ") and ";
             }
         }
 
